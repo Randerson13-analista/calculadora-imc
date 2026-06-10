@@ -50,7 +50,7 @@
 <body>
 
 <div class="box">
-    <h1>IMC</h1>
+    <h1>Calculadora IMC</h1>
 
     <input id="peso" placeholder="Peso (kg)">
     <input id="altura" placeholder="Altura (m)">
@@ -73,15 +73,10 @@ function calcular() {
     let imc = peso / (altura * altura);
     let texto = "";
 
-    if (imc < 18.5) {
-        texto = "Abaixo do peso";
-    } else if (imc < 25) {
-        texto = "Peso normal";
-    } else if (imc < 30) {
-        texto = "Sobrepeso";
-    } else {
-        texto = "Obesidade";
-    }
+    if (imc < 18.5) texto = "Abaixo do peso";
+    else if (imc < 25) texto = "Peso normal";
+    else if (imc < 30) texto = "Sobrepeso";
+    else texto = "Obesidade";
 
     document.getElementById("resultado").innerText =
         `IMC: ${imc.toFixed(2)} - ${texto}`;
@@ -90,7 +85,3 @@ function calcular() {
 
 </body>
 </html>
-
-
-
-	
