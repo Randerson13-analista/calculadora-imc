@@ -1,114 +1,192 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora IMC</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitLife IMC</title>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #4facfe, #00f2fe);
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+    background: url("https://images.unsplash.com/photo-1517836357463-d25dfeac3438") no-repeat center center/cover;
+    height: 100vh;
+}
 
-        .container {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            width: 320px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            text-align: center;
-        }
+.overlay {
+    background: rgba(0,0,0,0.75);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
 
-        h1 {
-            margin-bottom: 20px;
-            color: #333;
-        }
+.menu {
+    background: #111;
+    color: white;
+    display: flex;
+    justify-content: space-around;
+    padding: 15px;
+}
 
-        input {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 16px;
-        }
+.menu button {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+}
 
-        button {
-            width: 100%;
-            padding: 12px;
-            margin-top: 10px;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
+.container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
-        button:hover {
-            background: #0056b3;
-        }
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    width: 350px;
+    text-align: center;
+}
 
-        #resultado {
-            margin-top: 15px;
-            font-weight: bold;
-            font-size: 18px;
-        }
+input {
+    width: 100%;
+    margin: 5px 0;
+    padding: 10px;
+}
 
-        .info {
-            font-size: 12px;
-            color: #666;
-            margin-top: 10px;
-        }
-    </style>
+button.action {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background: green;
+    color: white;
+    border: none;
+}
+
+.hidden { display:none; }
+
+#history {
+    max-height: 150px;
+    overflow-y: auto;
+    font-size: 12px;
+    text-align: left;
+}
+</style>
 </head>
 
 <body>
 
-<div class="container">
-    <h1>Calculadora IMC</h1>
+<div class="overlay">
 
-    <input id="peso" type="number" placeholder="Peso (kg)">
-    <input id="altura" type="number" placeholder="Altura (m)">
+<!-- MENU -->
+<div class="menu">
+    <button onclick="show('profile')">Perfil</button>
+    <button onclick="show('imc')">IMC</button>
+    <button onclick="show('history')">Histórico</button>
+    <button onclick="logout()">Sair</button>
+</div>
 
-    <button onclick="calcular()">Calcular IMC</button>
+<!-- PERFIL -->
+<div class="container" id="profile">
+<div class="card">
+<h2>Cadastro</h2>
+<input id="nome" placeholder="Nome">
+<input id="idade" placeholder="Idade">
+<input id="email" placeholder="Email">
+<button class="action" onclick="enter()">Entrar</button>
+</div>
+</div>
 
-    <div id="resultado"></div>
+<!-- IMC -->
+<div class="container hidden" id="imc">
+<div class="card">
+<h2>Calculadora IMC</h2>
 
-    <div class="info">
-        Ex: 70kg e 1.75m
-    </div>
+<input id="peso" placeholder="Peso (kg)">
+<input id="altura" placeholder="Altura (m)">
+
+<button class="action" onclick="calc()">Calcular</button>
+
+<div id="result"></div>
+
+<div id="tips"></div>
+</div>
+</div>
+
+<!-- HISTÓRICO -->
+<div class="container hidden" id="history">
+<div class="card">
+<h2>Histórico</h2>
+<div id="list"></div>
+</div>
+</div>
+
 </div>
 
 <script>
-function calcular() {
-    let peso = parseFloat(document.getElementById("peso").value);
-    let altura = parseFloat(document.getElementById("altura").value);
 
-    if (!peso || !altura) {
-        document.getElementById("resultado").innerText =
-            "Preencha todos os campos corretamente.";
+let data = [];
+
+function show(page){
+    document.getElementById("profile").classList.add("hidden");
+    document.getElementById("imc").classList.add("hidden");
+    document.getElementById("history").classList.add("hidden");
+
+    document.getElementById(page).classList.remove("hidden");
+}
+
+function enter(){
+    show("imc");
+}
+
+function calc(){
+    let p = parseFloat(document.getElementById("peso").value);
+    let a = parseFloat(document.getElementById("altura").value);
+
+    if(!p || !a){
+        alert("Preencha tudo!");
         return;
     }
 
-    let imc = peso / (altura * altura);
-    let classificacao = "";
+    let imc = p/(a*a);
+    let msg = "";
 
-    if (imc < 18.5) classificacao = "Abaixo do peso";
-    else if (imc < 25) classificacao = "Peso normal";
-    else if (imc < 30) classificacao = "Sobrepeso";
-    else classificacao = "Obesidade";
+    if(imc < 18.5) msg = "Abaixo do peso";
+    else if(imc < 25) msg = "Peso normal";
+    else if(imc < 30) msg = "Sobrepeso";
+    else msg = "Obesidade";
 
-    document.getElementById("resultado").innerHTML =
-        `Seu IMC é <strong>${imc.toFixed(2)}</strong><br>${classificacao}`;
+    document.getElementById("result").innerHTML =
+    `IMC: <b>${imc.toFixed(2)}</b> - ${msg}`;
+
+    let tips = "";
+
+    if(imc < 18.5){
+        tips = "🔵 Foco: ganho de massa (proteínas + treino de força)";
+    } else if(imc < 25){
+        tips = "🟢 Manter rotina equilibrada de treino e alimentação";
+    } else {
+        tips = "🔴 Foco: déficit calórico + exercícios aeróbicos";
+    }
+
+    document.getElementById("tips").innerText = tips;
+
+    data.push(`IMC: ${imc.toFixed(2)} - ${msg}`);
+    updateHistory();
 }
+
+function updateHistory(){
+    document.getElementById("list").innerHTML =
+        data.map(d => `<p>${d}</p>`).join("");
+}
+
+function logout(){
+    location.reload();
+}
+
 </script>
 
 </body>
