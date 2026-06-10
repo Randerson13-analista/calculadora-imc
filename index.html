@@ -3,41 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FitLife IMC</title>
+<title>FitLife IMC Pro</title>
 
 <style>
 body {
     margin: 0;
     font-family: Arial;
-    background: url("https://images.unsplash.com/photo-1517836357463-d25dfeac3438") no-repeat center center/cover;
+    background: linear-gradient(135deg, #1d976c, #93f9b9);
     height: 100vh;
-}
-
-.overlay {
-    background: rgba(0,0,0,0.75);
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
-.menu {
-    background: #111;
-    color: white;
-    display: flex;
-    justify-content: space-around;
-    padding: 15px;
-}
-
-.menu button {
-    background: none;
-    border: none;
-    color: white;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.container {
-    flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -47,99 +20,113 @@ body {
     background: white;
     padding: 20px;
     border-radius: 12px;
-    width: 350px;
+    width: 340px;
     text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
 
 input {
     width: 100%;
-    margin: 5px 0;
     padding: 10px;
+    margin: 5px 0;
 }
 
-button.action {
+button {
     width: 100%;
     padding: 10px;
     margin-top: 10px;
-    background: green;
+    background: #28a745;
     color: white;
     border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #1e7e34;
 }
 
 .hidden { display:none; }
 
-#history {
-    max-height: 150px;
-    overflow-y: auto;
+.menu {
+    display: flex;
+    justify-content: space-between;
     font-size: 12px;
+    margin-bottom: 10px;
+}
+
+.menu span {
+    cursor: pointer;
+    color: #28a745;
+    font-weight: bold;
+}
+
+#history {
     text-align: left;
+    font-size: 12px;
+    max-height: 120px;
+    overflow: auto;
 }
 </style>
 </head>
 
 <body>
 
-<div class="overlay">
+<!-- LOGIN -->
+<div class="card" id="login">
+    <h2>Login FitLife</h2>
+    <input id="user" placeholder="Usuário">
+    <input id="pass" type="password" placeholder="Senha">
+    <button onclick="login()">Entrar</button>
+</div>
 
-<!-- MENU -->
+<!-- APP -->
+<div class="card hidden" id="app">
+
 <div class="menu">
-    <button onclick="show('profile')">Perfil</button>
-    <button onclick="show('imc')">IMC</button>
-    <button onclick="show('history')">Histórico</button>
-    <button onclick="logout()">Sair</button>
+    <span onclick="show('imc')">IMC</span>
+    <span onclick="show('history')">Histórico</span>
+    <span onclick="logout()">Sair</span>
 </div>
 
-<!-- PERFIL -->
-<div class="container" id="profile">
-<div class="card">
-<h2>Cadastro</h2>
-<input id="nome" placeholder="Nome">
-<input id="idade" placeholder="Idade">
-<input id="email" placeholder="Email">
-<button class="action" onclick="enter()">Entrar</button>
-</div>
-</div>
+<div id="imc">
+    <h3>Calculadora IMC</h3>
 
-<!-- IMC -->
-<div class="container hidden" id="imc">
-<div class="card">
-<h2>Calculadora IMC</h2>
+    <input id="peso" placeholder="Peso (kg)">
+    <input id="altura" placeholder="Altura (m)">
 
-<input id="peso" placeholder="Peso (kg)">
-<input id="altura" placeholder="Altura (m)">
+    <button onclick="calc()">Calcular</button>
 
-<button class="action" onclick="calc()">Calcular</button>
-
-<div id="result"></div>
-
-<div id="tips"></div>
-</div>
+    <div id="result"></div>
 </div>
 
-<!-- HISTÓRICO -->
-<div class="container hidden" id="history">
-<div class="card">
-<h2>Histórico</h2>
-<div id="list"></div>
-</div>
-</div>
+<div id="history" class="hidden"></div>
 
 </div>
 
 <script>
 
-let data = [];
+let history = [];
+
+function login(){
+    let u = document.getElementById("user").value;
+    let p = document.getElementById("pass").value;
+
+    if(!u || !p){
+        alert("Preencha login");
+        return;
+    }
+
+    localStorage.setItem("user", u);
+
+    document.getElementById("login").classList.add("hidden");
+    document.getElementById("app").classList.remove("hidden");
+}
 
 function show(page){
-    document.getElementById("profile").classList.add("hidden");
     document.getElementById("imc").classList.add("hidden");
     document.getElementById("history").classList.add("hidden");
 
     document.getElementById(page).classList.remove("hidden");
-}
-
-function enter(){
-    show("imc");
 }
 
 function calc(){
@@ -152,35 +139,21 @@ function calc(){
     }
 
     let imc = p/(a*a);
-    let msg = "";
 
-    if(imc < 18.5) msg = "Abaixo do peso";
-    else if(imc < 25) msg = "Peso normal";
-    else if(imc < 30) msg = "Sobrepeso";
-    else msg = "Obesidade";
+    let msg = imc < 18.5 ? "Abaixo" :
+              imc < 25 ? "Normal" :
+              imc < 30 ? "Sobrepeso" : "Obesidade";
 
     document.getElementById("result").innerHTML =
-    `IMC: <b>${imc.toFixed(2)}</b> - ${msg}`;
+        `IMC: <b>${imc.toFixed(2)}</b> - ${msg}`;
 
-    let tips = "";
-
-    if(imc < 18.5){
-        tips = "🔵 Foco: ganho de massa (proteínas + treino de força)";
-    } else if(imc < 25){
-        tips = "🟢 Manter rotina equilibrada de treino e alimentação";
-    } else {
-        tips = "🔴 Foco: déficit calórico + exercícios aeróbicos";
-    }
-
-    document.getElementById("tips").innerText = tips;
-
-    data.push(`IMC: ${imc.toFixed(2)} - ${msg}`);
+    history.push(`IMC ${imc.toFixed(2)} - ${msg}`);
     updateHistory();
 }
 
 function updateHistory(){
-    document.getElementById("list").innerHTML =
-        data.map(d => `<p>${d}</p>`).join("");
+    document.getElementById("history").innerHTML =
+        history.map(h => `<p>${h}</p>`).join("");
 }
 
 function logout(){
